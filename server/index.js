@@ -14,12 +14,14 @@ wss.on('connection',
         // ws.send('hello, new client');
 
         ws.on('message', function incoming(message){
+            const startTime = Date.now()
             const translated = Buffer.from(message, 'base64').toString();
             const { width, height, iterations } = JSON.parse(translated)
             console.log(translated)
             const imageArray = mandelbrotGenerator(width, height, iterations)
-            console.log(imageArray)
             ws.send(JSON.stringify(imageArray));
+            const stopTime = Date.now()
+            console.log(`Time Taken to execute = ${(stopTime - startTime)/1000} seconds`);
         })
     }
 )

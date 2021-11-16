@@ -13,7 +13,6 @@ function App() {
     const contextRef = useRef(null)
 
     useEffect(() => {
-        console.log('hello')
         const canvas = canvasRef.current;
         canvas.width = imageWidth
         canvas.height = imageWidth/1.5;
