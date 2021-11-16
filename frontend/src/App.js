@@ -6,7 +6,7 @@ function App() {
     const [number, setNumber] = useState(0) 
     const [imageArray, setImageArray] = useState([])
 
-    const [imageWidth, setImageWidth] = useState(1200)
+    const [imageWidth, setImageWidth] = useState(60)
     const [iterations, setIterations] = useState(10)
 
     const canvasRef = useRef(null)
@@ -15,10 +15,9 @@ function App() {
     useEffect(() => {
         console.log('hello')
         const canvas = canvasRef.current;
-        canvas.width = 600
-        canvas.height = 600/1.5;
+        canvas.width = imageWidth
+        canvas.height = imageWidth/1.5;
         const context = canvas.getContext('2d'); 
-        console.log(imageWidth, imageWidth/1.5)
         const imageData = context.createImageData(imageWidth, imageWidth/1.5)
         console.log(imageArray)
         for (let i = 0; i < imageData.data.length; i += 4) {
@@ -28,9 +27,9 @@ function App() {
             imageData.data[i + 2] = imageArray[i + 2];  // B value
             imageData.data[i + 3] = imageArray[i + 3];  // A value
         }
-        context.putImageData(imageData, imageWidth, imageWidth/1.5);
+        context.putImageData(imageData, 0, 0);
         contextRef.current = context;
-    }, [imageArray, imageWidth])
+    }, [imageArray])
 
     const openListener = useCallback(() => {
         console.log('connected to WS server');
@@ -62,8 +61,8 @@ function App() {
                 <canvas ref={canvasRef}></canvas>
                 <label>Choose image size:
                     <select onChange={(e) => setImageWidth(e.target.value)}>
-                        <option value={600}>600x400</option>
                         <option value={60}>60x40</option>
+                        <option value={120}>120x80</option>
                         <option value={240}>240x160</option>
                     </select>
                 </label>
