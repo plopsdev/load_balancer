@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css';
-import socket from './socket'
+import axios from 'axios'
 
 function App() {
-    const [number, setNumber] = useState(0) 
     const [imageArray, setImageArray] = useState([])
 
     const [imageWidth, setImageWidth] = useState(60)
@@ -30,30 +29,16 @@ function App() {
         contextRef.current = context;
     }, [imageArray])
 
-    const openListener = useCallback(() => {
-        console.log('connected to WS server');
-    }, [])
 
-    const messageListener = useCallback((event) => {
-        console.log('message from server : ', event.data)
-        setImageArray(JSON.parse(event.data))
-    }, [])
-
-    useEffect(() => {
-        socket.addEventListener('open', openListener);
-        socket.addEventListener('message', messageListener);
-        return () => {
-            socket.removeEventListener('open', openListener);
-            socket.removeEventListener('message', messageListener);
-        }
-    }, [openListener, messageListener])
-
-    const handleSubmit = (event) => {
+    const handleSubmit = async(event) => {
         event.preventDefault();
-        socket.send(JSON.stringify({width: imageWidth, height: imageWidth/1.5, iterations: iterations}))
+        let body = {width: imageWidth, height: imageWidth/1.5, iterations: iterations};
+        console.log(body)
+        let response = await axios.get('http://localhost:3002/mandelbrot', {params: {width: imageWidth, height: imageWidth/1.5, iterations: iterations}})
+        console.log(response)
+        setImageArray(response.data)
     }
 
-    
     return(
         <div>
             <form onSubmit={handleSubmit} >
