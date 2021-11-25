@@ -7,6 +7,7 @@ function App() {
 
     const [imageWidth, setImageWidth] = useState(60)
     const [iterations, setIterations] = useState(10)
+    const [loadBalancer, setLoadBalancer] = useState('')
 
     const canvasRef = useRef(null)
     const contextRef = useRef(null)
@@ -32,9 +33,7 @@ function App() {
 
     const handleSubmit = async(event) => {
         event.preventDefault();
-        let body = {width: imageWidth, height: imageWidth/1.5, iterations: iterations};
-        console.log(body)
-        let response = await axios.get('http://localhost:3002/mandelbrot', {params: {width: imageWidth, height: imageWidth/1.5, iterations: iterations}})
+        let response = await axios.get('http://localhost:3001/mandelbrot', {params: {width: imageWidth, height: imageWidth/1.5, iterations: iterations, loadBalancer: loadBalancer}})
         console.log(response)
         setImageArray(response.data)
     }
@@ -48,12 +47,22 @@ function App() {
                         <option value={60}>60x40</option>
                         <option value={120}>120x80</option>
                         <option value={240}>240x160</option>
+                        <option value={1200}>1200x800</option>
                     </select>
                 </label>
                 <label>Choose number of iterations:
                     <select onChange={(e) => setIterations(e.target.value)}>
                         <option value={10}>10</option>
                         <option value={20}>20</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                    </select>
+                </label>
+                <label>
+                    <select onChange={(e) => setLoadBalancer(e.target.value)}>
+                        <option value={''}>None</option>
+                        <option value={'cluster'}>Using cluster module</option>
+                        <option value={'nginx'}>Using Nginx</option>
                     </select>
                 </label>
                 <input type="submit" />
