@@ -42,18 +42,15 @@ if (cluster.isPrimary){
 // For Worker
 else { 
     console.log(cluster.worker.id)
+    app.get('/mandelbrot', function (req, res) {
+        const { width, height, iterations } = req.query;
+        console.log(cluster.worker.id)
+        mandelbrotGenerator( cluster.worker.id, forks)
+        
+    })
 }
 
-
-
-// app.get('/mandelbrot', function (req, res) {
-//     const { width, height, iterations } = req.query;
-//     console.log(cluster.worker.id)
-//     // mandelbrotGenerator( cluster.worker.id, forks)
-    
-// })
-
-// app.listen(3001);
+app.listen(3001);
 
 //--basic--//
 
