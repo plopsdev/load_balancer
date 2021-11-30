@@ -5,9 +5,23 @@ import axios from 'axios'
 function App() {
     const [imageArray, setImageArray] = useState([])
 
-    const [imageWidth, setImageWidth] = useState(60)
-    const [iterations, setIterations] = useState(10)
+    const [imageWidth, setImageWidth] = useState(6)
+    const [imageHeight, setImageHeight] = useState(4)
+    const [iterations, setIterations] = useState(10000)
     const [loadBalancer, setLoadBalancer] = useState('')
+
+    const complexPlane = {
+        real: {
+            start: -2,
+            end: 1,
+            total: 3 
+        },
+        imaginary: {
+            start: -1,
+            end: 1,
+            total: 2
+        }
+    }
 
     const canvasRef = useRef(null)
     const contextRef = useRef(null)
@@ -30,12 +44,53 @@ function App() {
         contextRef.current = context;
     }, [imageArray])
 
+    const computeComplexCoordinates = (x, y, halfPixelSize) => {
+        let real = complexPlane.real.start + (x/imageWidth)*complexPlane.real.total - halfPixelSize
+        let imaginary = complexPlane.imaginary.end - (y/imageHeight)*complexPlane.imaginary.total + halfPixelSize
+        
+        return {real: real, imaginary: imaginary}
+    }
 
     const handleSubmit = async(event) => {
         event.preventDefault();
-        let response = await axios.get('http://localhost:3001/mandelbrot', {params: {width: imageWidth, height: imageWidth/1.5, iterations: iterations, loadBalancer: loadBalancer}})
-        console.log(response)
-        setImageArray(response.data)
+        const halfPixelSize = (complexPlane.imaginary.total/imageHeight)/2
+        let imageArray = []
+        let requests = []
+        for (let y=1; y<=imageHeight; y++){
+            for (let x=1; x<=imageWidth; x++){
+                let { real, imaginary } = computeComplexCoordinates(x, y, halfPixelSize)
+                requests.push({real: real, imaginary: imaginary})
+                // let response = await axios.get(, {params: })
+                // let rgba = response.data
+
+                // imageArray.push({
+                //     coordinates: {
+                //         x: x,
+                //         y: y
+                //     },
+                //     rgba: rgba
+                // })
+            }
+        }
+
+        Promise.all(requests.map((params) => axios.get('http://localhost:8080/mandelbrot', {params: params}))).then(
+            axios.spread((...allData) => {
+                console.log({ allData })
+            })
+        )
+
+        imageArray.sort(function(a, b){
+            return(
+              a.coordinates.y - b.coordinates.y || a.coordinates.x - b.coordinates.x
+            )
+          })
+
+        // let mandelbrotImage =[]
+        // for (let pixel of imageArray){
+        //     mandelbrotImage.push(... pixel.rgba)
+        // }
+        
+        // setImageArray(mandelbrotImage)
     }
 
     return(
@@ -43,8 +98,11 @@ function App() {
             <form onSubmit={handleSubmit} >
                 <canvas ref={canvasRef}></canvas>
                 <label>Choose image size:
-                    <select onChange={(e) => setImageWidth(e.target.value)}>
-                        <option value={60}>60x40</option>
+                    <select onChange={(e) => {
+                        setImageWidth(e.target.value);
+                        setImageHeight(e.target.value*2/3)
+                    }}>
+                        <option value={6}>60x40</option>
                         <option value={120}>120x80</option>
                         <option value={240}>240x160</option>
                         <option value={1200}>1200x800</option>
@@ -56,6 +114,7 @@ function App() {
                         <option value={20}>20</option>
                         <option value={50}>50</option>
                         <option value={100}>100</option>
+                        <option value={10000}>10000</option>
                     </select>
                 </label>
                 <label>
