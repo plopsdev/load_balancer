@@ -7,7 +7,7 @@ function App() {
 
     const [imageWidth, setImageWidth] = useState(6)
     const [imageHeight, setImageHeight] = useState(4)
-    const [iterations, setIterations] = useState(10000)
+    const [iterations, setIterations] = useState(10)
     const [loadBalancer, setLoadBalancer] = useState('')
 
     const complexPlane = {
@@ -59,7 +59,7 @@ function App() {
         for (let y=1; y<=imageHeight; y++){
             for (let x=1; x<=imageWidth; x++){
                 let { real, imaginary } = computeComplexCoordinates(x, y, halfPixelSize)
-                requests.push({real: real, imaginary: imaginary})
+                requests.push({real: real, imaginary: imaginary, iterations: iterations})
                 // let response = await axios.get(, {params: })
                 // let rgba = response.data
 
@@ -73,17 +73,14 @@ function App() {
             }
         }
 
-        Promise.all(requests.map((params) => axios.get('http://localhost:8080/mandelbrot', {params: params}))).then(
-            axios.spread((...allData) => {
-                console.log({ allData })
-            })
-        )
+        axios.all(requests.map((params) => axios.get('http://localhost:8080/mandelbrot', {params: params})))
+        
 
-        imageArray.sort(function(a, b){
-            return(
-              a.coordinates.y - b.coordinates.y || a.coordinates.x - b.coordinates.x
-            )
-          })
+        // imageArray.sort(function(a, b){
+        //     return(
+        //       a.coordinates.y - b.coordinates.y || a.coordinates.x - b.coordinates.x
+        //     )
+        //   })
 
         // let mandelbrotImage =[]
         // for (let pixel of imageArray){

@@ -16,8 +16,8 @@ app2.use(morgan('dev'))
 const handler = serverNum => (req, res) => {
     //console.log(`server ${serverNum}`, req.method, req.url, req.body, req.query);
     const { real, imaginary, iterations } = req.query
-    let result = mandelbrotGenerator(real, imaginary, iterations)
     console.log(`Hello from server ${serverNum}!`)
+    let result = mandelbrotGenerator(real, imaginary, iterations)
     res.send(result);
 };
 

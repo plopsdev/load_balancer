@@ -17,11 +17,13 @@ const mandelbrotGenerator = (real, imaginary, iterations) => {
             else {
                 z = math.add(math.multiply(previousZ, previousZ), math.complex(real, imaginary));
                 if (computeModule(z) > 2){
+                    console.log('In the Mandelbrot')
                     return i
                 }
             }
             previousZ = z
         }
+        console.log('Not in Mandelbrot')
         return -1
     }
 
