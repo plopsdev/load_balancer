@@ -5,9 +5,10 @@ import axios from 'axios'
 function App() {
     const [imageArray, setImageArray] = useState([])
 
-    const [imageWidth, setImageWidth] = useState(6)
-    const [imageHeight, setImageHeight] = useState(4)
+    const [imageWidth, setImageWidth] = useState(30)
+    const [imageHeight, setImageHeight] = useState(20)
     const [iterations, setIterations] = useState(10)
+    const [timeToRender, setTimeToRender] = useState(0)
     const [loadBalancer, setLoadBalancer] = useState('')
 
     const complexPlane = {
@@ -27,12 +28,12 @@ function App() {
     const contextRef = useRef(null)
 
     useEffect(() => {
+        console.log("création d'une imagee")
         const canvas = canvasRef.current;
         canvas.width = imageWidth
         canvas.height = imageWidth/1.5;
         const context = canvas.getContext('2d'); 
         const imageData = context.createImageData(imageWidth, imageWidth/1.5)
-        console.log(imageArray)
         for (let i = 0; i < imageData.data.length; i += 4) {
             // Modify pixel data
             imageData.data[i] = imageArray[i];  // R value
@@ -53,17 +54,18 @@ function App() {
 
     const handleSubmit = async(event) => {
         event.preventDefault();
+        const startTime = Date.now()
         const halfPixelSize = (complexPlane.imaginary.total/imageHeight)/2
-        let imageArray = []
+        let image = []
         let requests = []
         for (let y=1; y<=imageHeight; y++){
             for (let x=1; x<=imageWidth; x++){
                 let { real, imaginary } = computeComplexCoordinates(x, y, halfPixelSize)
-                requests.push({real: real, imaginary: imaginary, iterations: iterations})
-                // let response = await axios.get(, {params: })
+                requests.push({real: real, imaginary: imaginary, iterations: iterations, x: x, y: y})
+                // let response = await axios.get('http://localhost', {params: {real: real, imaginary: imaginary, iterations: iterations} })
                 // let rgba = response.data
-
-                // imageArray.push({
+                // image.push(...response.data)
+                // image.push({
                 //     coordinates: {
                 //         x: x,
                 //         y: y
@@ -73,21 +75,56 @@ function App() {
             }
         }
 
-        axios.all(requests.map((params) => axios.get('http://localhost:8080/mandelbrot', {params: params})))
+        // Promise.all(requests.map((params) => axios.get('http://localhost', {params: params}))).then(
+        //     axios.spread((...allData) => {
+        //         for (let i of allData){
+        //             // imageArray.push({
+        //             //     coordinates: {
+        //             //         x: x,
+        //             //         y: y
+        //             //     },
+        //             //     rgba: i.data
+        //             // })
+        //             // console.log(i.data)
+        //             mandelbrotImage.push(i.data)
+                    
+        //         }
+        //     })
+        // )
+        let mandelbrotImage = (await Promise.all(requests.map((params) => axios.get('http://localhost', {params: params})))).map(response =>  response.data)
         
+        // console.log(args);
+        // mandelbrotImage.push(args.data) //j'aimerai faire un truc dans le genre, juste à chaque retour de requête, je stack les data
+        // console.log(args)
 
-        // imageArray.sort(function(a, b){
+        // mandelbrotImage.sort(function(a, b){
+        //     return(
+        //       a.coordinates.y - b.coordinates.y || a.coordinates.x - b.coordinates.x
+        //     )
+        //   })
+        
+        // image.sort(function(a, b){
         //     return(
         //       a.coordinates.y - b.coordinates.y || a.coordinates.x - b.coordinates.x
         //     )
         //   })
 
         // let mandelbrotImage =[]
-        // for (let pixel of imageArray){
-        //     mandelbrotImage.push(... pixel.rgba)
-        // }
-        
-        // setImageArray(mandelbrotImage)
+        let finalImage = []
+        // console.log(typeof(mandelbrotImage))
+        // mandelbrotImage.map((pixel) => {
+        //     console.log(pixel)
+        // })
+        for (let pixel of mandelbrotImage){
+            finalImage.push(...pixel.rgba)
+        }
+        // console.log(mandelbrotImage)
+        // console.log(finalImage)
+        setImageArray(finalImage)
+        // console.log(image)
+        // setImageArray(image)
+        const stopTime = Date.now()
+        setTimeToRender((stopTime - startTime)/1000)
     }
 
     return(
@@ -123,6 +160,7 @@ function App() {
                 </label>
                 <input type="submit" />
             </form>
+            <h3>Time to render : {timeToRender} seconds</h3>
         </div>
     )
 }
